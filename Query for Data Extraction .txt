@@ -1,0 +1,42 @@
+-- SQL Query to retrieve Clothing Orders and Payment details
+
+SELECT 
+    RIGHT(order_reference, 11) AS 'Order Number',
+    order_description AS 'Order Description',
+    supplier_name AS 'Supplier Name',
+    product_category AS 'Product Category',
+    procurement_method AS 'Procurement Method',
+    clothing_line AS 'Clothing Line',
+    po_number AS 'Purchase Order Number',
+    total_cost AS 'Total Cost',
+    fiscal_year AS 'Fiscal Year',
+    payment_id AS 'Payment ID',
+    payment_type AS 'Payment Type',
+    payment_reason AS 'Payment Reason',
+    payment_amount_requested AS 'Requested Payment Amount',
+    CASE 
+        WHEN payment_status_code = 'dis' THEN 'Payment Disbursed'
+        WHEN payment_status_code = 'app' THEN 'Payment Approval in Progress'
+        WHEN payment_status_code = 'can' THEN 'Payment Canceled'
+        WHEN payment_status_code = 'dra' THEN 'Payment Draft'
+        WHEN payment_status_code = 'okp' THEN 'Approved for Payment'
+        WHEN payment_status_code = 'pip' THEN 'Payment in Progress'
+        ELSE 'No Payment Requested'
+    END AS 'Payment Status',
+    creation_date AS 'Order Creation Date',
+    approval_date AS 'Payment Approval Date',
+    payment_process_id AS 'Payment Process ID'
+    
+FROM clothing_orders AS ord
+LEFT JOIN payments AS pay ON ord.order_id = pay.order_id
+LEFT JOIN suppliers AS sup ON sup.supplier_id = ord.supplier_id
+LEFT JOIN fiscal_years AS fy ON ord.fiscal_year_id = fy.fiscal_year_id
+LEFT JOIN product_categories AS prod ON prod.category_id = ord.product_category_id
+LEFT JOIN clothing_lines AS cl ON ord.clothing_line_id = cl.line_id
+LEFT JOIN procurement_methods AS pm ON pm.method_code = ord.procurement_method_code
+WHERE ord.department IN ('Clothing Department')
+AND fy.fiscal_year = '2025'
+AND ord.status = 'active'
+AND ord.product_category NOT IN ('Accessories', 'Footwear')
+
+ORDER BY ord.po_number DESC;
